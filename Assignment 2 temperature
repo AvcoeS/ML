@@ -1,0 +1,62 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn import metrics
+
+dataset = pd.read_csv("C:/Users/SL3-20/Downloads/temperatures.csv")
+
+print(dataset.shape)
+print(dataset.describe())
+
+dataset.plot(x='FEB', y='MAR', style='o')
+plt.title('FEB vs MAR Temperature')
+plt.xlabel('February Temperature (mintemp)')
+plt.ylabel('March Temperature (maxtemp)')
+plt.show()
+
+plt.figure(figsize=(15, 10))
+sns.histplot(dataset['MAR'], kde=True)
+plt.title('Distribution of March Temperatures')
+plt.show()
+
+X = dataset['FEB'].values.reshape(-1, 1)
+y = dataset['MAR'].values.reshape(-1, 1)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+print(f'Intercept: {model.intercept_}')
+print(f'Coefficient: {model.coef_}')
+
+y_pred = model.predict(X_test)
+
+df = pd.DataFrame({'Actual': y_test.flatten(), 'Predicted': y_pred.flatten()})
+print(df)
+
+df1 = df.head(25)
+df1.plot(kind='bar', figsize=(16, 10))
+plt.title('Actual vs Predicted Temperatures for First 25 Test Samples')
+plt.grid(which='major', linestyle='-', linewidth='0.5', color='green')
+plt.grid(which='minor', linestyle=':', linewidth='0.5', color='black')
+plt.show()
+
+plt.scatter(X_test, y_test, color='gray', label='Test Data')
+plt.plot(X_test, y_pred, color='red', linewidth=2, label='Regression Line')
+plt.title('Linear Regression: February vs March Temperature')
+plt.xlabel('February Temperature (mintemp)')
+plt.ylabel('March Temperature (maxtemp)')
+plt.legend()
+plt.show()
+
+mse = metrics.mean_squared_error(y_test, y_pred)
+mae = metrics.mean_absolute_error(y_test, y_pred)
+r2 = metrics.r2_score(y_test, y_pred)
+
+print(f'Mean Squared Error (MSE): {mse}')
+print(f'Mean Absolute Error (MAE): {mae}')
+print(f'R-Squared (R2): {r2}')

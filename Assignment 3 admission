@@ -1,0 +1,67 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+df = pd.read_csv("C:/Users/SL3-18/Documents/Admission_Predict.csv")
+
+print("Dataset Information:\n")
+df.info()
+
+print("\nDataset Description:\n")
+print(df.describe())
+
+print("\nMissing Values:\n")
+print(df.isnull().sum())
+
+scaler = StandardScaler()
+col_to_scale = ['GRE Score', 'CGPA']
+df[col_to_scale] = scaler.fit_transform(df[col_to_scale])
+
+print("\nDataset after standardization:\n")
+print(df.head())
+
+X = df.drop('target', axis=1)
+y = df['target']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+print("\nTraining data shape: ", X_train.shape)
+print("Testing data shape: ", X_test.shape)
+
+tree_clf = DecisionTreeClassifier(random_state=42)
+tree_clf.fit(X_train, y_train)
+
+y_train_pred = tree_clf.predict(X_train)
+y_test_pred = tree_clf.predict(X_test)
+
+def print_score(clf, X_train, y_train, X_test, y_test, train=True):
+    if train:
+        pred = clf.predict(X_train)
+        print("\nTrain Results:")
+        print(f"Accuracy Score: {accuracy_score(y_train, pred) * 100:.2f}%")
+        print("Classification Report:")
+        print(classification_report(y_train, pred))
+        print("Confusion Matrix:")
+        print(confusion_matrix(y_train, pred))
+    else:
+        pred = clf.predict(X_test)
+        print("\nTest Results:")
+        print(f"Accuracy Score: {accuracy_score(y_test, pred) * 100:.2f}%")
+        print("Classification Report:")
+        print(classification_report(y_test, pred))
+        print("Confusion Matrix:")
+        print(confusion_matrix(y_test, pred))
+
+print_score(tree_clf, X_train, y_train, X_test, y_test, train=True)
+print_score(tree_clf, X_train, y_train, X_test, y_test, train=False)
+
+cm = confusion_matrix(y_test, y_test_pred)
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=["Not Admitted", "Admitted"], yticklabels=["Not Admitted", "Admitted"])
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.title('Confusion Matrix')
+plt.show()

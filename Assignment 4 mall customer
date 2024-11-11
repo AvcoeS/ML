@@ -1,0 +1,57 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import silhouette_score
+from sklearn.model_selection import cross_val_score
+
+mall_data = pd.read_csv("C:/Users/SL3-18/Downloads/Mall_Customers.csv")
+
+print("Missing Values in Dataset:")
+print(mall_data.isnull().sum())
+
+mall_data.fillna(mall_data.mean(), inplace=True)
+
+scaler = StandardScaler()
+mall_data_scaled = scaler.fit_transform(mall_data[['Age', 'Annual Income (k$)', 'Spending Score (1-100)']])
+
+print("Scaled Data Sample:")
+print(mall_data_scaled[:5])
+
+X_train, X_test = train_test_split(mall_data_scaled, test_size=0.2, random_state=42)
+
+print(f"Train Data Shape: {X_train.shape}, Test Data Shape: {X_test.shape}")
+
+kmeans = KMeans(n_clusters=5, init='k-means++', random_state=0)
+y_train = kmeans.fit_predict(X_train)
+
+fig = plt.figure(figsize=(10, 10))
+ax = fig.add_subplot(111, projection='3d')
+
+ax.scatter(X_train[y_train == 0, 0], X_train[y_train == 0, 1], X_train[y_train == 0, 2], s=40, color='red', label='Cluster 1')
+ax.scatter(X_train[y_train == 1, 0], X_train[y_train == 1, 1], X_train[y_train == 1, 2], s=40, color='blue', label='Cluster 2')
+ax.scatter(X_train[y_train == 2, 0], X_train[y_train == 2, 1], X_train[y_train == 2, 2], s=40, color='green', label='Cluster 3')
+ax.scatter(X_train[y_train == 3, 0], X_train[y_train == 3, 1], X_train[y_train == 3, 2], s=40, color='yellow', label='Cluster 4')
+ax.scatter(X_train[y_train == 4, 0], X_train[y_train == 4, 1], X_train[y_train == 4, 2], s=40, color='purple', label='Cluster 5')
+
+ax.set_xlabel('Age of a customer')
+ax.set_ylabel('Annual Income (k$)')
+ax.set_zlabel('Spending Score (1-100)')
+ax.legend()
+plt.show()
+
+print(f"Inertia (WCSS) for KMeans: {kmeans.inertia_}")
+
+sil_score = silhouette_score(X_train, y_train)
+print(f"Silhouette Score for the clustering: {sil_score}")
+
+def clustering_silhouette_score(X, y):
+    return silhouette_score(X, y)
+
+scores = cross_val_score(kmeans, X_train, y_train, cv=5, scoring=clustering_silhouette_score)
+
+print(f"Cross-validation silhouette scores: {scores}")
+print(f"Average Cross-validation silhouette score: {scores.mean()}")

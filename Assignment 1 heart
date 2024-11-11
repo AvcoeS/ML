@@ -1,0 +1,30 @@
+import pandas as pd
+import statistics as s
+from sklearn.model_selection import train_test_split
+
+df = pd.read_csv("/home/avcoe/heart.csv")
+
+shape = df.shape
+print("Shape of dataset is:", shape)
+
+missing_values = df.isnull().sum()
+print("Missing values in each column:\n", missing_values)
+
+data_types = df.dtypes
+print("Data types of each column:\n", data_types)
+
+zero_counts = (df == 0).sum()
+print("Number of zeros in each column:\n", zero_counts)
+
+mean_age = s.mean(df['age'])
+print("Mean age of patients:", mean_age)
+
+df_selected = df[['age', 'sex', 'cp', 'trestbps', 'chol']]
+print("Selected columns:\n", df_selected.head())
+
+X = df_selected
+y = df['target']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=56)
+
+print("Training data shape:", X_train.shape)
+print("Testing data shape:", X_test.shape)
